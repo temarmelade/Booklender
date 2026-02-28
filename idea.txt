@@ -1,0 +1,19 @@
+Проект нужно разделить на страницы:
+0. Registration/Authentification(/)
+1. Основная (/home.html)
+    1.1.Таблица, где будет расписана каждая аренда по следующему виду:
+        |---Book---|---Lender---|---Start of lending---|
+    1.2. Таблица-список книг (/home/books):
+        |---Book---|---BookId---|---Image---|---Description---|---isRented---|---Lender---|---Start of lending---|
+    1.3. Таблица-список рабочих(/home/staff):
+        |---Name---|---Mail---|---hasRent---|---Book---|
+2. Профиль (/profile)
+    2.1. Name
+    2.2. Mail
+    2.3. History of lending:
+        |---Book---|---Start of Lending---|---End of Lending---|
+3. Информация о книге (/bookInfo)
+   3.1. Граф Монте-Кристо
+   3.2. Описание
+   3.3. Главные герои
+   3.4. Сюжет
