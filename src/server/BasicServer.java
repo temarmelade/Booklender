@@ -14,14 +14,14 @@ import java.util.Map;
 
 public abstract class BasicServer {
     private final HttpServer server;
-    private final String dataDirectory = "";
+    private final String dataDirectory = "data";
     private final Map<String, RouteHandler> routes = new HashMap<>();
 
     protected BasicServer(String host, int port) throws IOException {
         server = createServer(host, port);
         handleGeneral();
     }
-    private final String makeKey(HttpExchange exchange) {
+    private String makeKey(HttpExchange exchange) {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
         int index = path.lastIndexOf('.');
@@ -36,7 +36,7 @@ public abstract class BasicServer {
     protected void handleGeneral() {
         server.createContext("/", this::handleIncomingRequest);
 
-        handleDefault("/", exchange -> sendFile(exchange, ContentType.TEXT_HTML, makePath("home.html")));
+        handleDefault("/", exchange -> sendFile(exchange, ContentType.TEXT_HTML, makePath("registration.html")));
 
         handleFile(".css", ContentType.TEXT_CSS);
         handleFile(".js", ContentType.TEXT_JAVASCRIPT);
@@ -85,7 +85,10 @@ public abstract class BasicServer {
             e.printStackTrace();
         }
     }
-    private Path makePath(String path) {
-        return Paths.get(dataDirectory, path);
+    private Path makePath(String... path) {
+        return Path.of(dataDirectory, path);
+    }
+    public void start() {
+        server.start();
     }
 }
