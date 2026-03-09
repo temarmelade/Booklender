@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import users.Book;
+import users.Rent;
 import users.User;
 
 import java.io.*;
@@ -12,15 +14,12 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class BasicServer {
     private final HttpServer server;
-    private final String dataDirectory = "src/data";
+    private final String dataDirectory = "src/resources";
     private final Map<String, RouteHandler> routes = new HashMap<>();
 
     protected BasicServer(String host, int port) throws IOException {
@@ -35,7 +34,7 @@ public abstract class BasicServer {
         return String.format("%s %s", method, fileName);
     }
     protected HttpServer createServer(String host, int port) throws IOException {
-        System.out.printf("Creating HTTP server on http://%s:/%d\n", host, port);
+        System.out.printf("Creating HTTP server on http://%s:%d/\n", host, port);
         InetSocketAddress address = new InetSocketAddress(host, port);
         return HttpServer.create(address, 50);
     }
@@ -82,7 +81,7 @@ public abstract class BasicServer {
             out.flush();
         }
     }
-    private void respond404(HttpExchange exchange) {
+    protected void respond404(HttpExchange exchange) {
         try {
             byte[] data = "404 Not Found".getBytes();
             sendBytesData(exchange, ResponseCodes.NOT_FOUND, ContentType.TEXT_PLAIN, data);
@@ -135,7 +134,103 @@ public abstract class BasicServer {
             users = new ArrayList<>();
         }
         users.add(newUser);
-
         mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), users);
+    }
+    protected boolean isNewUser(String email) throws IOException {
+        Path path = Path.of("data/users.json");
+        ObjectMapper mapper = new ObjectMapper();
+
+        if (!Files.exists(path)) return false;
+        List<User> users = mapper.readValue(path.toFile(), new TypeReference<>() {});
+        for (User user : users) {
+            if (email.equals(user.getEmail())) return false;
+        }
+        return true;
+    }
+    protected boolean isRight(User currentUser) {
+        if (currentUser.getEmail() == null || currentUser.getPassword() == null) return false;
+
+        try {
+            Path path = Path.of("data/users.json");
+            ObjectMapper mapper = new ObjectMapper();
+
+            if (!Files.exists(path)) return false;
+            List<User> users = mapper.readValue(path.toFile(), new TypeReference<List<User>>() {
+            });
+            for (User user : users) {
+                if (currentUser.getEmail().equals(user.getEmail()) && (currentUser.getPassword().equals(user.getPassword()))) return true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    protected void saveRent(Rent newRent) throws IOException {
+        Path path = Path.of("data/rents.json");
+        ObjectMapper mapper = new ObjectMapper();
+        List<Rent> rents;
+        if (Files.exists(path)) {
+            rents = mapper.readValue(path.toFile(), new TypeReference<List<Rent>>() {});
+        } else {
+            rents = new ArrayList<>();
+        }
+        rents.add(newRent);
+        mapper.writerWithDefaultPrettyPrinter().writeValue(path.toFile(), rents);
+    }
+    protected User findUserByEmail(String email) {
+        if (email == null) return null;
+
+        try {
+            Path p = Path.of("data/users.json");
+            ObjectMapper mapper = new ObjectMapper();
+            List<User> users = mapper.readValue(p.toFile(), new TypeReference<>() {});
+            for (User user : users) {
+                if (email.equals(user.getEmail())) return user;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+    protected String getCookieValue(HttpExchange exchange, String cookieName) {
+        String cookieString = exchange.getRequestHeaders()
+                .getOrDefault("Cookie", List.of("")).getFirst();
+        Map<String, String> cookie = Cookie.parse(cookieString);
+        return cookie.get(cookieName);
+    }
+    protected void addCookie(User user, HttpExchange exchange) {
+        Cookie sessionCookie = Cookie.make("email", user.getEmail());
+        sessionCookie.setMaxAge(3600);
+        sessionCookie.setHttpOnly(true);
+        exchange.getResponseHeaders().add("Set-Cookie", sessionCookie.toString());
+    }
+    protected Map<String, List<Rent>> groupByUser(List<User> users, List<Rent> rents) {
+        Map<String, List<Rent>> userRents = new LinkedHashMap<>();
+        for (User user : users) {
+            userRents.put(user.getEmail(), new ArrayList<>());
+        }
+        for (Rent rent : rents) {
+            String renterEmail = rent.getRenterName();
+            if (userRents.containsKey(renterEmail)) {
+                userRents.get(renterEmail).add(rent);
+            }
+        }
+        return userRents;
+    }
+    protected boolean isBookFree(String bookName) {
+        try {
+            if (bookName == null) return false;
+            Path p = Path.of("data/rents.json");
+            if (!Files.exists(p)) return false;
+            ObjectMapper mapper = new ObjectMapper();
+            List<Rent> rents = mapper.readValue(p.toFile(), new TypeReference<>() {});
+            for (Rent rent : rents) {
+                if (bookName.equals(rent.getBookName())) return true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

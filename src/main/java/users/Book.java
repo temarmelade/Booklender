@@ -4,6 +4,7 @@ public class Book {
     private String title;
     private String author;
     private String description;
+    private boolean isAvailable;
     public Book() {}
     public Book(String title, String author, String description) {
         this.title = title;
@@ -33,5 +34,8 @@ public class Book {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+    public void setAvailable(boolean available) {
+        this.isAvailable = available;
     }
 }

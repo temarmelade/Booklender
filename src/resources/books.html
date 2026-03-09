@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Books</title>
+    <link rel="stylesheet" href="/css/books.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="top-bar">
+        <a href="/home" class="back-btn">← Back</a>
+        <h1>Books</h1>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Description</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <#list books as book>
+        <tr>
+            <td>${book.title}</td>
+            <td>${book.author}</td>
+            <td>${book.description}</td>
+            <td><button class="action-btn" type="submit">Сдать</button></td>
+        </tr>
+        </#list>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

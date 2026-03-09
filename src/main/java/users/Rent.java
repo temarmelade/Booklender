@@ -1,18 +1,20 @@
 package users;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Rent {
     private String bookName;
     private String renterName;
-    private Date startDate;
-    private Date endDate;
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+    private String startDate;
+    private String endDate;
     public Rent() {}
     public Rent(String bookName, String renterName, Date startDate, Date endDate) {
         this.bookName = bookName;
         this.renterName = renterName;
-        this.startDate = startDate;
-        this.endDate = endDate;
+        this.startDate = format.format(startDate);
+        this.endDate = format.format(endDate);
     }
 
     public String getBookName() {
@@ -31,19 +33,19 @@ public class Rent {
         this.renterName = renterName;
     }
 
-    public Date getStartDate() {
+    public String getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
 
-    public Date getEndDate() {
+    public String getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
 }
