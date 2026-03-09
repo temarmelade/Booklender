@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+<div class="login-box">
+
+    <h2>Login</h2>
+    <p>${error!}</p>
+    <form method="POST" action="/login">
+
+        <input type="email" name="email" placeholder="Email" required>
+
+        <input type="password" name="password" placeholder="Password" required>
+
+        <button type="submit">Sign in</button>
+
+    </form>
+    <if
+    <div class="register-link">
+        Нет аккаунта? <a href="/registration">Зарегистрироваться</a>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff</title>
+    <link rel="stylesheet" href="/css/staff.css">
+</head>
+<body>
+<div class="container">
+
+    <div class="top-bar">
+        <a href="/home" class="back-btn">← Back</a>
+        <h1>Staff</h1>
+    </div>
+
+    <table>
+
+        <thead>
+        <tr>
+            <th>Email</th>
+            <th>Book</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <#list userRents as email, rents>
+            <#if rents?size == 0>
+                <tr>
+                    <td>${email}</td>
+                    <td>Нет книг</td>
+                </tr>
+            <#else>
+                <#list rents as rent>
+                    <tr>
+                        <td>${email}</td>
+                        <td>${rent.bookName}</td>
+                    </tr>
+                </#list>
+            </#if>
+        </#list>
+
+        </tbody>
+
+    </table>
+
+</div>
+</body>
+</html>

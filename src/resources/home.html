@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booklender</title>
+    <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+<header>
+    <nav>
+        <a href="/home">Home</a>
+        <a href="/home/books">Books</a>
+        <a href="/home/staff">Staff</a>
+        <a href="/profile">Profile</a>
+    </nav>
+</header>
+
+
+<section class="container">
+
+    <h2>Current Lending</h2>
+
+    <table>
+
+        <thead>
+        <tr>
+            <th>Book</th>
+            <th>Renter</th>
+            <th>Start of lending</th>
+        </tr>
+        </thead>
+
+        <>
+
+        <#list rents as rent>
+            <#if !rent.endDate??>
+                 <tr>
+                    <td>${rent.bookName}</td>
+                    <td>${rent.renterName}</td>
+                    <td>${rent.startDate}</td>
+                 </tr>
+            </#if>
+        </#list>
+
+        </tbody>
+
+    </table>
+
+</section>
+</body>
+</html>

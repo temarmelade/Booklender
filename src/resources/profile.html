@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="top-bar">
+        <a href="/home" class="back-btn">← Back</a>
+        <h1>My Profile</h1>
+    </div>
+
+    <div class="profile-card">
+
+        <div class="email">
+            Email: <strong>${user.email}</strong>
+        </div>
+
+    </div>
+
+    <h2>My Lending History</h2>
+
+    <table>
+
+        <thead>
+        <tr>
+            <th>Book</th>
+            <th>Start</th>
+            <th>End</th>
+        </tr>
+        </thead>
+
+        <>
+        <#list dataModel.rents as rent>
+        <#if rent.renterName == user.email>
+        <tr>
+            <td>${rent.bookName}</td>
+            <td>${rent.startDate}</td>
+            <td>${rent.endDate!"Not returned yet"}</td>
+        </tr>
+        </#if>
+        </#list>
+        </tbody>
+
+    </table>
+
+</div>
+
+</body>
+</html>
