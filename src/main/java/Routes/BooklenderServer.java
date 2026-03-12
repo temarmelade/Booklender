@@ -38,23 +38,16 @@ public class BooklenderServer extends BasicServer implements ConfigurationManage
         handleDefaultGet("/registration", this::registrationHandlerGet);
         handleDefaultGet("/bookInfo", this::bookInfoHandler);
         handleDefaultGet("/welcome", this::welcomeHandler);
-        handleDefaultGet("/cookies", this::cookieHandler);
-    }
-    private void cookieHandler(HttpExchange exchange) {
-        Map<String, Object> data = new HashMap<>();
-        int times = 36;
-        data.put("times", times);
-        renderTemplate(exchange, "cookie.html", data, freeMarketConfig);
+        handleDefaultGet("/borrow", this::borrowHandler);
+        handleDefaultGet("/return", this::returnHandler);
     }
     private void loginHandlerGet(HttpExchange exchange) {
-        System.out.println("ya tolko tut");
         renderTemplate(exchange, "login.html", null, freeMarketConfig);
     }
     private void loginHandlerPost(HttpExchange exchange) {
         String raw = getBody(exchange);
         Map<String, String> params = Utils.parseUrlEncoded(raw, "&");
         User user = new User(params.get("email"), sha256(params.get("password")));
-        System.out.println("ya tut");
         if (!isRight(user)) {
             Map<String, Object> data = new HashMap<>();
             data.put("error", "Invalid email or password");
@@ -62,26 +55,27 @@ public class BooklenderServer extends BasicServer implements ConfigurationManage
             return;
         }
         addCookie(user, exchange);
-        System.out.println("ya proveril");
-        user.setConfirmed();
         redirect303(exchange, "/welcome");
     }
     private void homeHandler(HttpExchange exchange) {
         DataModel dataModel = DataModel.load();
-//        String currentEmail = getCookieValue(exchange, "email");
-//        User currentUser = findUserByEmail(currentEmail);
-//        Map<String, Object> data = new HashMap<>();
-//        data.put("currentUser", currentUser);
-//        data.put("dataModel", dataModel);
         renderTemplate(exchange, "home.html", dataModel, freeMarketConfig);
     }
     private void booksHandler(HttpExchange exchange) {
         ListBook books = new ListBook();
-        renderTemplate(exchange, "books.html", books, freeMarketConfig);
+        List<Rent> currentRents = currentRents();
+        String cookieValue = getCookieValue(exchange, "email");
+        User currentUser = cookieValue != null ? findUserByEmail(cookieValue) : null;
+        Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("books", books.getBooks());
+        dataModel.put("currentRents", currentRents);
+        dataModel.put("currentUser", currentUser);
+        renderTemplate(exchange, "books.html", dataModel, freeMarketConfig);
     }
     private void staffHandler(HttpExchange exchange) {
         DataModel dataModel = DataModel.load();
-        Map<String, List<Rent>> userRents = groupByUser(dataModel.getUsers(), dataModel.getRents());
+        List<Rent> currentRents = currentRents();
+        Map<String, List<Rent>> userRents = groupByUser(dataModel.getUsers(), currentRents);
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("userRents", userRents);
         renderTemplate(exchange, "staff.html", dataMap, freeMarketConfig);
@@ -137,5 +131,29 @@ public class BooklenderServer extends BasicServer implements ConfigurationManage
     }
     private void bookInfoHandler(HttpExchange exchange) {
         renderTemplate(exchange, "bookInfo.html", null, freeMarketConfig);
+    }
+    private void borrowHandler(HttpExchange exchange) {
+        try {
+            String query = getQueryParams(exchange);
+
+            Map<String, String> params = Utils.parseUrlEncoded(query, "&");
+            String renterName = params.get("email");
+            String bookName = params.get("title");
+
+            borrowBook(bookName.trim(), renterName.trim());
+
+            redirect303(exchange, "/home/books");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void returnHandler(HttpExchange exchange) {
+        String query = getQueryParams(exchange);
+        Map<String, String> params = Utils.parseUrlEncoded(query, "&");
+        String renterName = params.get("email");
+        String bookName = params.get("title");
+        returnBook(bookName, renterName);
+        redirect303(exchange, "/home/books");
     }
 }

@@ -63,7 +63,7 @@ tr:hover{
     background:#f9fafb;
 }
 
-.action-btn{
+.action-btn-borrow{
     background:#27ae60;
     color:white;
     border:none;
@@ -73,7 +73,26 @@ tr:hover{
     font-size:14px;
     transition:0.2s;
 }
-
+.action-btn-return{
+    background:red;
+    color:white;
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+    transition:0.2s;
+}
+.action-btn-unavailable{
+    background:grey;
+    color:white;
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+    transition:0.2s;
+}
 .action-btn:hover{
-    background:#219150;
+    background:blue;
 }

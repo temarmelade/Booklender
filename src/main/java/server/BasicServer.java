@@ -1,5 +1,6 @@
 package server;
 
+import Routes.ListBook;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
@@ -14,6 +15,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,6 +31,9 @@ public abstract class BasicServer {
     private String makeKey(HttpExchange exchange) {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
+        if (path.endsWith("/") && (path.length() > 1)) {
+            path = path.substring(0, path.length() - 1);
+        }
         int index = path.lastIndexOf('.');
         String fileName = index != -1 ? path.substring(index) : path;
         return String.format("%s %s", method, fileName);
@@ -82,6 +87,7 @@ public abstract class BasicServer {
         }
     }
     protected void respond404(HttpExchange exchange) {
+        System.out.println("404 for: " + exchange.getRequestURI());
         try {
             byte[] data = "404 Not Found".getBytes();
             sendBytesData(exchange, ResponseCodes.NOT_FOUND, ContentType.TEXT_PLAIN, data);
@@ -219,18 +225,114 @@ public abstract class BasicServer {
         return userRents;
     }
     protected boolean isBookFree(String bookName) {
-        try {
-            if (bookName == null) return false;
-            Path p = Path.of("data/rents.json");
-            if (!Files.exists(p)) return false;
-            ObjectMapper mapper = new ObjectMapper();
-            List<Rent> rents = mapper.readValue(p.toFile(), new TypeReference<>() {});
-            for (Rent rent : rents) {
-                if (bookName.equals(rent.getBookName())) return true;
+        List<Rent> currentRents = currentRents();
+        for (Rent rent : currentRents) {
+            if (bookName.equals(rent.getRenterName())) {
+                return false;
             }
+        }
+        return true;
+    }
+    protected void borrowBook(String bookName, String renterName) {
+        try {
+            Path p = Path.of("data/books.json");
+            if (!Files.exists(p)) return;
+
+            ObjectMapper mapper = new ObjectMapper();
+            List<Book> books = mapper.readValue(p.toFile(), new TypeReference<List<Book>>() {});
+
+            Book targetBook = null;
+            for (Book book : books) {
+                if (bookName.equals(book.getTitle())) {
+                    targetBook = book;
+                    break;
+                }
+            }
+
+            if (targetBook == null) return;
+            if (!targetBook.getIsAvailable()) return;
+
+            String startDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            Rent newRent = new Rent(bookName, renterName, startDate, null);
+
+            saveRent(newRent);
+
+            targetBook.setAvailable(false);
+
+            mapper.writerWithDefaultPrettyPrinter().writeValue(p.toFile(), books);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
+    }
+    protected void returnBook(String bookName, String renterName) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            Path booksPath = Path.of("data/books.json");
+            List<Book> books = mapper.readValue(booksPath.toFile(), new TypeReference<List<Book>>() {});
+
+            Book targetBook = null;
+            for (Book book : books) {
+                if (book.getTitle().equals(bookName)) {
+                    targetBook = book;
+                    break;
+                }
+            }
+
+            if (targetBook == null) return;
+
+            targetBook.setAvailable(true);
+
+            mapper.writerWithDefaultPrettyPrinter().writeValue(booksPath.toFile(), books);
+
+
+            Path rentsPath = Path.of("data/rents.json");
+            List<Rent> rents = mapper.readValue(rentsPath.toFile(), new TypeReference<List<Rent>>() {});
+
+            Rent targetRent = null;
+            for (Rent rent : rents) {
+                if (rent.getBookName().equals(bookName) &&
+                        rent.getRenterName().equals(renterName) &&
+                        rent.getEndDate() == null) {
+
+                    targetRent = rent;
+                    break;
+                }
+            }
+
+            if (targetRent == null) return;
+
+            String endDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            targetRent.setEndDate(endDate);
+
+            mapper.writerWithDefaultPrettyPrinter().writeValue(rentsPath.toFile(), rents);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    protected List<Rent> currentRents() {
+        try {
+            Path p = Path.of("data/rents.json");
+            if (!Files.exists(p)) return null;
+            ObjectMapper mapper = new ObjectMapper();
+            List<Rent> currentRents = mapper.readValue(p.toFile(), new TypeReference<List<Rent>>() {})
+                    .stream()
+                    .filter(BasicServer::isCurrentRent)
+                    .collect(Collectors.toList());
+            return currentRents;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+    private static boolean isCurrentRent(Rent rent) {
+        if (rent == null) return false;
+        return rent.getEndDate() == null;
+    }
+    protected String getQueryParams(HttpExchange exchange) {
+        String queryParams = exchange.getRequestURI().getQuery();
+        return Objects.nonNull(queryParams) ? queryParams.trim() : "";
     }
 }

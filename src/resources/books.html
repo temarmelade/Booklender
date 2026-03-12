@@ -24,19 +24,39 @@
             <th>Action</th>
         </tr>
         </thead>
-
         <tbody>
         <#list books as book>
         <tr>
             <td>${book.title}</td>
             <td>${book.author}</td>
             <td>${book.description}</td>
-            <td><button class="action-btn" type="submit">Сдать</button></td>
+            <td>
+                <#assign isRentedByCurrentUser = false>
+
+                <#list currentRents as currentRent>
+                    <#if currentRent.bookName == book.title && currentUser.email == currentRent.renterName>
+                        <#assign isRentedByCurrentUser = true>
+                    </#if>
+                </#list>
+
+        <#if !book.isAvailable && isRentedByCurrentUser>
+        <a class="action-btn-return"
+           href="/return?email=${currentUser.email}&title=${book.title}">
+            Сдать
+        </a>
+        <#elseif !book.isAvailable>
+        <button class="action-btn-unavailable" type="button">Занята</button>
+        <#else>
+        <a class="action-btn-borrow"
+           href="/borrow?email=${currentUser.email}&title=${book.title}">
+            Взять
+        </a>
+        </#if>
+            </td>
         </tr>
         </#list>
         </tbody>
     </table>
-
 </div>
 
 </body>

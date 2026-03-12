@@ -10,6 +10,7 @@ public class Book {
         this.title = title;
         this.author = author;
         this.description = description;
+        this.isAvailable = true;
     }
 
     public String getTitle() {
@@ -37,5 +38,8 @@ public class Book {
     }
     public void setAvailable(boolean available) {
         this.isAvailable = available;
+    }
+    public boolean getIsAvailable() {
+        return isAvailable;
     }
 }

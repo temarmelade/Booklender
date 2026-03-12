@@ -6,15 +6,14 @@ import java.util.Date;
 public class Rent {
     private String bookName;
     private String renterName;
-    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     private String startDate;
     private String endDate;
     public Rent() {}
-    public Rent(String bookName, String renterName, Date startDate, Date endDate) {
+    public Rent(String bookName, String renterName, String startDate, String endDate) {
         this.bookName = bookName;
         this.renterName = renterName;
-        this.startDate = format.format(startDate);
-        this.endDate = format.format(endDate);
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 
     public String getBookName() {

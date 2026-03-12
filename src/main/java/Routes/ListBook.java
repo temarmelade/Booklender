@@ -11,21 +11,28 @@ import java.util.List;
 
 public class ListBook {
     private List<Book> books;
+
     public ListBook() {
-        this.books = getBooks();
+        this.books = loadBooks();
     }
+
     public List<Book> getBooks() {
+        return books;
+    }
+
+    private List<Book> loadBooks() {
         try {
             Path p = Path.of("data/books.json");
             ObjectMapper mapper = new ObjectMapper();
 
-            if (!Files.exists(p)) return null;
-            books = mapper.readValue(p.toFile(), new TypeReference<>(){});
-            return books;
+            if (!Files.exists(p)) {
+                return new ArrayList<>();
+            }
+
+            return mapper.readValue(p.toFile(), new TypeReference<List<Book>>() {});
         } catch (Exception e) {
             e.printStackTrace();
+            return new ArrayList<>();
         }
-        return new ArrayList<>();
     }
-
 }

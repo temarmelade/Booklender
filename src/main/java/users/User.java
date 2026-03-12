@@ -7,7 +7,6 @@ public class User {
     private String email;
     private String password;
     private String id;
-    private boolean isConfirmed = false;
     private List<Rent> rents;
     public User() {}
     public User(String email, String password) {
@@ -33,11 +32,5 @@ public class User {
     }
     public String getId() {
         return id;
-    }
-    public void setConfirmed() {
-        this.isConfirmed = true;
-    }
-    public boolean isConfirmed() {
-        return isConfirmed;
     }
 }
